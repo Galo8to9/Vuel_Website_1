@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import React from 'react'
 import Image from 'next/image';
+import { formatDateString } from '@/lib/utils';
 
 interface Props {
     id: string;
@@ -8,9 +9,9 @@ interface Props {
     parentId: string | null;
     content: string;
     author: {
+      id: string;
       name: string;
       image: string;
-      id: string;
     };
     community: {
       id: string;
@@ -36,6 +37,10 @@ const VuelPostCard = ({
     createdAt,
     comments,
     isComment}: Props) => {
+
+
+      console.log(community)
+
   return (
     <article className={`flex w-full flex-col rounded-xl ${isComment ? "px-0 xs:px-7" : "bg-dark-2 p-7"}`}>
         <div className='flex items-start justify-between'>
@@ -103,8 +108,25 @@ const VuelPostCard = ({
                     </div>
                 </div>
             </div>
-        </div>
 
+       
+        </div>
+        {!isComment && community && (
+          <Link href={`/communities/${community.id}`} className='mt-5 flex item-center'>
+            <p className='text-subtle-medium text-gray-1'>
+              {formatDateString(createdAt)}
+              {" "}- {community.name} Community
+            </p>
+            <Image
+              src={community.image}
+              alt={community.name}
+              width={14}
+              height={14}
+              className='ml-1 rounded-full object-cover'
+            />
+
+          </Link>
+        )}
     </article>
   )
 }

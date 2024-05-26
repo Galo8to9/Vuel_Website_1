@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import VuelPost from "../models/post.model"
 import User from "../models/user.model"
 import { connectToDB } from "../mongoose"
+import Community from "../models/community.model"
 
 
 interface Params {
@@ -18,15 +19,27 @@ export async function createPost({text, author, communityId, path}: Params) {
     try {
         connectToDB()
 
-        const createPost = await VuelPost.create({
+        const communityIdObject = await Community.findOne(
+            { id: communityId },
+            { _id: 1 }
+        );
+
+        const createdPost = await VuelPost.create({
             text,
             author,
-            community: null,
+            community: communityIdObject,
         })
 
         await User.findByIdAndUpdate( author, {
-            $push: { vuelPosts: createPost._id }
+            $push: { vuelPosts: createdPost._id }
         })
+
+        if (communityIdObject) {
+            // Update Community model
+            await Community.findByIdAndUpdate(communityIdObject, {
+              $push: { vuelPosts: createdPost._id },
+            });
+        }
 
         revalidatePath(path)
         
@@ -48,14 +61,21 @@ export async function fetchPosts (pageNumber = 1, pageSize =20) {
     .sort({ createdAt:"desc" })
     .skip(skipAmount)
     .limit(pageSize)
-    .populate({ path: "author", model: User })
     .populate({
-        path: "children",
-        populate:{
-            path: "author",
-            model: User,
-            select: "_id parentID image"
-        } 
+        path: "author",
+        model: User,
+      })
+      .populate({
+        path: "community",
+        model: Community,
+      })
+      .populate({
+        path: "children", // Populate the children field
+        populate: {
+          path: "author", // Populate the author field within children
+          model: User,
+          select: "_id name parentId image", // Select only _id and username fields of the author
+        },
     })
 
     const totalPostsCount = await VuelPost.countDocuments( {parentId: { $in: [null, undefined]}} )

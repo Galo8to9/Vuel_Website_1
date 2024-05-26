@@ -6,8 +6,8 @@ import { dark } from "@clerk/themes"
 function Topbar() {
   return (
     <nav className='topbar'>
-      <Link href='/' className='flex items-center gap-4'>
-        <Image src='/VuelLogo.png' alt='logo' width={80} height={80}/>
+      <Link href='/' className='flex items-center'>
+        <Image src='/VuelLogo.png' alt='logo' width={100} height={100}/>
       </Link>
 
       <div className='flex items-center gap-1'>

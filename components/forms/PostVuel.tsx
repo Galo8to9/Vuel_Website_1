@@ -14,6 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from '../ui/input';
 import * as z from "zod";
 import { usePathname, useRouter } from 'next/navigation';
+import { useOrganization } from '@clerk/nextjs';
 
 // import { updateUser } from '@/lib/actions/user.actions';
 import { VuelPostValidation } from '@/lib/validations/vuelpost';
@@ -36,7 +37,9 @@ interface Props {
 function PostVuel({ userId }: {userId: string}) {
     const router = useRouter()
     const pathname = usePathname()
-    
+    const { organization } = useOrganization()
+
+
     const form = useForm({
         resolver: zodResolver(VuelPostValidation),
         defaultValues: {
@@ -46,12 +49,21 @@ function PostVuel({ userId }: {userId: string}) {
     })
 
   const onSubmit = async (values: z.infer<typeof VuelPostValidation>) => {
-    await createPost({
-      text: values.vuelPost, 
-      author: userId,
-      communityId: null,
-      path: pathname
-    })
+    if(!organization) {
+      await createPost({
+        text: values.vuelPost, 
+        author: userId,
+        communityId: null,
+        path: pathname
+      })
+    } else {
+      await createPost({
+        text: values.vuelPost, 
+        author: userId,
+        communityId: organization.id,
+        path: pathname
+      })
+    }
     router.push("/")
   }
 

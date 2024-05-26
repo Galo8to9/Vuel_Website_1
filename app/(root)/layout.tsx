@@ -23,7 +23,7 @@ export default function RootLayout({
     return (
         <ClerkProvider>
           <html lang='en'>
-            <body className={inter.className}>
+            <body className={`bg-dark-1 ${inter.className}`}>
               <Topbar />
     
               <main className="flex flex-row">
